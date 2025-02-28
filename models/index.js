@@ -1,28 +1,25 @@
-// import { number, string } from "joi";
 import mongoose from "mongoose";
 
-const project = new mongoose.Schema({
-    title: {
-        type: String,
-        unique: true // `email` must be unique
-    },
+const attachmentSchema = new mongoose.Schema({
+    type: String,
+    url: String
+}, { _id: false });
+
+const taskSchema = new mongoose.Schema({
+    title: String,
     description: String,
-    task: [
-        {
-            id: Number,
-            title: String,
-            description: String,
-            order: Number,
-            stage: String,
-            index: Number,
-            attachment: [
-                { type: String, url: String }
-            ],
-            created_at: { type: Date, default: Date.now },
-            updated_at: { type: Date, default: Date.now },
-        }
-    ]
-}, { timestamps: true })
+    order: Number,
+    stage: String,
+    index: Number,
+    attachment: [attachmentSchema],
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now }
+});
 
+const projectSchema = new mongoose.Schema({
+    title: { type: String, unique: true, required: true },
+    description: { type: String, required: true },
+    task: [taskSchema]
+}, { timestamps: true });
 
-export default mongoose.model('Project', project);
+export default mongoose.model('Project', projectSchema);
