@@ -1,11 +1,11 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "serve": "nodemon server.js"
+    "serve": "nodemon server.js",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
@@ -13,11 +13,20 @@
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.0.2",
-    "express": "^4.18.1",
+    "express": "^4.21.2",
     "joi": "^17.6.0",
     "mongoose": "^6.6.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.19"
-  }
+    "nodemon": "^2.0.22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ReddyHoma/project_management_tool_backend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ReddyHoma/project_management_tool_backend/issues"
+  },
+  "homepage": "https://github.com/ReddyHoma/project_management_tool_backend#readme",
+  "description": ""
 }
