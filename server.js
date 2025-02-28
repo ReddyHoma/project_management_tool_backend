@@ -17,17 +17,28 @@ mongoose.connect(process.env.MONGODB_PATH, {
 });
 
 const PORT = process.env.SERVER_PORT || 9000;
-const origin = process.env.CORS_ORIGIN || "http://localhost:3000";
+const allowedOrigins = process.env.CORS_ORIGIN.split(",");
 
 const app = express();
 
-app.use(cors({ origin }));
+// Dynamic CORS Configuration
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Debug: Log when API routes are loaded
 console.log("✅ Loading API routes...");
-app.use("/api", api);
+app.use("/", api);
 
 // Default Home Route
 app.get("/", (req, res) => {

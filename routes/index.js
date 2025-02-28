@@ -3,6 +3,8 @@ import joi from 'joi';
 import mongoose from 'mongoose';
 import Project from '../models/index.js';
 
+
+
 const api = express.Router();
 
 // ✅ Root API Check
@@ -21,7 +23,7 @@ api.get('/projects', async (req, res) => {
 });
 
 // ✅ Get a single project by ID
-api.get('/project/:id', async (req, res) => {
+api.get('/projects/:id', async (req, res) => {
     if (!req.params.id) return res.status(400).json({ error: true, message: "ID is required" });
 
     try {
@@ -35,7 +37,7 @@ api.get('/project/:id', async (req, res) => {
 });
 
 // ✅ Create a new project
-api.post('/project', async (req, res) => {
+api.post('/projects', async (req, res) => {
     const schema = joi.object({
         title: joi.string().min(3).max(30).required(),
         description: joi.string().required(),
@@ -57,7 +59,10 @@ api.post('/project', async (req, res) => {
 });
 
 // ✅ Update an existing project
-api.put('/project/:id', async (req, res) => {
+
+api.put('/projects/:id', async (req, res) => {
+    console.log("Received Update Request:", req.body);
+
     if (!req.params.id) return res.status(400).json({ error: true, message: "ID is required" });
 
     const schema = joi.object({
@@ -79,7 +84,7 @@ api.put('/project/:id', async (req, res) => {
 });
 
 // ✅ Delete a project
-api.delete('/project/:id', async (req, res) => {
+api.delete('/projects/:id', async (req, res) => {
     if (!req.params.id) return res.status(400).json({ error: true, message: "ID is required" });
 
     try {
@@ -93,7 +98,7 @@ api.delete('/project/:id', async (req, res) => {
 });
 
 // ✅ Add a task to a project
-api.post('/project/:id/task', async (req, res) => {
+api.post('/projects/:id/task', async (req, res) => {
     if (!req.params.id) return res.status(400).json({ error: true, message: "Project ID is required" });
 
     const schema = joi.object({
@@ -125,7 +130,7 @@ api.post('/project/:id/task', async (req, res) => {
 });
 
 // ✅ Get a task by ID
-api.get('/project/:id/task/:taskId', async (req, res) => {
+api.get('/projects/:id/task/:taskId', async (req, res) => {
     if (!req.params.id || !req.params.taskId) return res.status(400).json({ error: true, message: "Project ID and Task ID are required" });
 
     try {
@@ -142,7 +147,7 @@ api.get('/project/:id/task/:taskId', async (req, res) => {
 });
 
 // ✅ Delete a task
-api.delete('/project/:id/task/:taskId', async (req, res) => {
+api.delete('/projects/:id/task/:taskId', async (req, res) => {
     if (!req.params.id || !req.params.taskId) return res.status(400).json({ error: true, message: "Project ID and Task ID are required" });
 
     try {
