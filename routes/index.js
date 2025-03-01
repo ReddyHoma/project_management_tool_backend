@@ -146,6 +146,20 @@ api.get('/projects/:id/task/:taskId', async (req, res) => {
     }
 });
 
+// ✅ Get all tasks for a specific project
+api.get('/projects/:id/tasks', async (req, res) => {
+    if (!req.params.id) return res.status(400).json({ error: true, message: "Project ID is required" });
+
+    try {
+        const project = await Project.findById(req.params.id);
+        if (!project) return res.status(404).json({ error: true, message: "Project not found" });
+
+        res.json(project.task); // Return all tasks
+    } catch (error) {
+        return res.status(500).json({ error: true, message: error.message });
+    }
+});
+
 // ✅ Delete a task
 api.delete('/projects/:id/task/:taskId', async (req, res) => {
     if (!req.params.id || !req.params.taskId) return res.status(400).json({ error: true, message: "Project ID and Task ID are required" });
