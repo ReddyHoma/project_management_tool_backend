@@ -223,4 +223,72 @@ api.delete('/projects/:id/tasks/:taskId', async (req, res) => {
     }
 });
 
+// ✅ Add a member to a project
+api.post('/projects/:id/members', async (req, res) => {
+    const { id, name, role } = req.body;
+
+    if (!id || !name || !role) return res.status(400).json({ error: true, message: "Member ID, name, and role are required" });
+
+    try {
+        const project = await Project.findById(req.params.id);
+        if (!project) return res.status(404).json({ error: true, message: "Project not found" });
+
+        const newMember = { id, name, role };
+
+        project.members.push(newMember);
+        await project.save();
+
+        res.json({ message: "Member added successfully", member: newMember });
+    } catch (error) {
+        return res.status(500).json({ error: true, message: error.message });
+    }
+});
+
+// ✅ Move a member to another project
+api.put('/projects/:id/members/:id', async (req, res) => {
+    const { newProjectId } = req.body;
+
+    if (!newProjectId || !mongoose.Types.ObjectId.isValid(newProjectId)) {
+        return res.status(400).json({ error: true, message: "Invalid new project ID" });
+    }
+
+    try {
+        const sourceProject = await Project.findById(req.params.id);
+        if (!sourceProject) return res.status(404).json({ error: true, message: "Source project not found" });
+
+        if (!Array.isArray(sourceProject.members)) {
+            return res.status(500).json({ error: true, message: "Invalid members array" });
+        }
+
+        const memberIndex = sourceProject.members.findIndex(m => m.id === req.params.memberId);
+        if (memberIndex === -1) return res.status(404).json({ error: true, message: "Member not found in the source project" });
+
+        const memberToMove = sourceProject.members.splice(memberIndex, 1)[0]; // Remove member from source project
+        await sourceProject.save();
+
+        const destinationProject = await Project.findById(newProjectId);
+        if (!destinationProject) return res.status(404).json({ error: true, message: "Destination project not found" });
+
+        destinationProject.members.push(memberToMove);
+        await destinationProject.save();
+
+        res.json({ message: "Member moved successfully", member: memberToMove });
+    } catch (error) {
+        return res.status(500).json({ error: true, message: error.message });
+    }
+});
+
+
+// ✅ Get all members of a specific project
+api.get('/projects/:id/members', async (req, res) => {
+    try {
+        const project = await Project.findById(req.params.id);
+        if (!project) return res.status(404).json({ error: true, message: "Project not found" });
+
+        res.json({ members: project.members });
+    } catch (error) {
+        return res.status(500).json({ error: true, message: error.message });
+    }
+});
+
 export default api;
