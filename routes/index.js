@@ -98,7 +98,7 @@ api.delete('/projects/:id', async (req, res) => {
 });
 
 // ✅ Add a task to a project
-api.post('/projects/:id/task', async (req, res) => {
+api.post('/projects/:id/tasks', async (req, res) => {
     if (!req.params.id) return res.status(400).json({ error: true, message: "Project ID is required" });
 
     const schema = joi.object({
@@ -130,7 +130,7 @@ api.post('/projects/:id/task', async (req, res) => {
 });
 
 // ✅ Get a task by ID
-api.get('/projects/:id/task/:taskId', async (req, res) => {
+api.get('/projects/:id/tasks/:taskId', async (req, res) => {
     if (!req.params.id || !req.params.taskId) return res.status(400).json({ error: true, message: "Project ID and Task ID are required" });
 
     try {
@@ -148,20 +148,65 @@ api.get('/projects/:id/task/:taskId', async (req, res) => {
 
 // ✅ Get all tasks for a specific project
 api.get('/projects/:id/tasks', async (req, res) => {
-    if (!req.params.id) return res.status(400).json({ error: true, message: "Project ID is required" });
+    if (!req.params.id) {
+        return res.status(400).json({ error: true, message: "Project ID is required" });
+    }
+
+    try {
+        const project = await Project.findById(req.params.id);
+        if (!project) {
+            return res.status(404).json({ error: true, message: "Project not found" });
+        }
+
+        // 🛠️ Group tasks by their stage
+        const groupedTasks = {
+            requested: project.task.filter((t) => t.stage === "Requested"),
+            todo: project.task.filter((t) => t.stage === "To Do"),
+            inProgress: project.task.filter((t) => t.stage === "In Progress"),
+            completed: project.task.filter((t) => t.stage === "Completed"),
+        };
+
+        console.log("Grouped Tasks Response:", groupedTasks);  // ✅ Debugging output
+        res.json(groupedTasks);
+    } catch (error) {
+        console.error("Error fetching tasks:", error);
+        return res.status(500).json({ error: true, message: error.message });
+    }
+});
+
+api.put('/projects/:id/tasks/:taskId', async (req, res) => {
+    if (!req.params.id || !req.params.taskId) {
+        return res.status(400).json({ error: true, message: "Project ID and Task ID are required" });
+    }
+
+    const schema = joi.object({
+        title: joi.string().min(3).max(30).optional(),
+        description: joi.string().optional(),
+        stage: joi.string().valid("Requested", "To Do", "In Progress", "Completed").optional(),
+    });
+
+    const { error, value } = schema.validate(req.body);
+    if (error) return res.status(422).json({ error: true, message: error.details[0].message });
 
     try {
         const project = await Project.findById(req.params.id);
         if (!project) return res.status(404).json({ error: true, message: "Project not found" });
 
-        res.json(project.task); // Return all tasks
+        const taskIndex = project.task.findIndex(t => t._id.toString() === req.params.taskId);
+        if (taskIndex === -1) return res.status(404).json({ error: true, message: "Task not found" });
+
+        // Update only the fields provided in the request
+        Object.assign(project.task[taskIndex], value);
+        await project.save();
+
+        res.json({ message: "Task updated successfully", task: project.task[taskIndex] });
     } catch (error) {
         return res.status(500).json({ error: true, message: error.message });
     }
 });
 
 // ✅ Delete a task
-api.delete('/projects/:id/task/:taskId', async (req, res) => {
+api.delete('/projects/:id/tasks/:taskId', async (req, res) => {
     if (!req.params.id || !req.params.taskId) return res.status(400).json({ error: true, message: "Project ID and Task ID are required" });
 
     try {

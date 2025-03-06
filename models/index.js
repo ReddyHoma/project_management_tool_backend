@@ -9,7 +9,7 @@ const taskSchema = new mongoose.Schema({
     title: String,
     description: String,
     order: Number,
-    stage: String,
+    stage: { type: String, enum: ["Requested", "To Do", "In Progress", "Completed"], default: "Requested" },
     index: Number,
     attachment: [attachmentSchema],
     created_at: { type: Date, default: Date.now },
