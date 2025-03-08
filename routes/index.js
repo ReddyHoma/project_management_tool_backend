@@ -15,10 +15,20 @@ api.get("/", (req, res) => {
 // ✅ Get all projects
 api.get('/projects', async (req, res) => {
     try {
-        const data = await Project.find({}, { task: 0, __v: 0, updatedAt: 0 });
+        const data = await Project.find({}, {__v: 0, updatedAt: 0 });
         return res.json(data);
     } catch (error) {
         return res.status(500).json({ error: true, message: error.message });
+    }
+});
+
+api.get("/tasks", async (req, res) => {
+    try {
+        const allProjects = await Project.find(); // Assuming tasks are stored inside each project
+        const allTasks = allProjects.flatMap(project => project.tasks || []);
+        res.json(allTasks);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to fetch tasks" });
     }
 });
 
