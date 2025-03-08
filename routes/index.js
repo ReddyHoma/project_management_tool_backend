@@ -1,8 +1,7 @@
 import express from 'express';
 import joi from 'joi';
 import mongoose from 'mongoose';
-import Project from '../models/index.js';
-
+import { Activity, Project } from "../models/index.js";
 
 
 const api = express.Router();
@@ -15,7 +14,7 @@ api.get("/", (req, res) => {
 // ✅ Get all projects
 api.get('/projects', async (req, res) => {
     try {
-        const data = await Project.find({}, {__v: 0, updatedAt: 0 });
+        const data = await Project.find({}, { __v: 0, updatedAt: 0 });
         return res.json(data);
     } catch (error) {
         return res.status(500).json({ error: true, message: error.message });
@@ -31,6 +30,16 @@ api.get("/tasks", async (req, res) => {
         res.status(500).json({ error: "Failed to fetch tasks" });
     }
 });
+
+api.get("/activities", async (req, res) => {
+    try {
+        const activities = await Activity.find().sort({ timestamp: -1 }).limit(10);
+        res.json(activities);
+    } catch (error) {
+        res.status(500).json({ error: true, message: error.message });
+    }
+});
+
 
 // ✅ Get a single project by ID
 api.get('/projects/:id', async (req, res) => {
@@ -60,6 +69,10 @@ api.post('/projects', async (req, res) => {
     try {
         const project = new Project(value);
         const data = await project.save();
+        const activity = new Activity({
+            message: `New project '${project.title}' was created.`,
+        });
+        await activity.save();
         res.json({ message: "Project created successfully", data });
     } catch (e) {
         if (e.code === 11000) {
@@ -133,6 +146,9 @@ api.post('/projects/:id/tasks', async (req, res) => {
 
         project.task.push(newTask);
         await project.save();
+
+        const activity = new Activity({ message: `New task added: ${newTask.title} in ${project.title}` });
+        await activity.save();
 
         res.json({ message: "Task added successfully", task: newTask });
     } catch (error) {
@@ -277,7 +293,7 @@ api.put('/projects/:projectId/members/:memberId', async (req, res) => {
         return res.status(500).json({ error: true, message: error.message });
     }
 });
- 
+
 
 // ✅ Delete a task
 api.delete('/projects/:id/tasks/:taskId', async (req, res) => {
@@ -311,6 +327,9 @@ api.post('/projects/:id/members', async (req, res) => {
 
         project.members.push(newMember);
         await project.save();
+
+        const activity = new Activity({ message: `${newMember.name} joined project ${project.title} as ${newMember.role}` });
+        await activity.save();
 
         res.json({ message: "Member added successfully", member: newMember });
     } catch (error) {

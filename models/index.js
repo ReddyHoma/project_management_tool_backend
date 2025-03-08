@@ -5,6 +5,11 @@ const attachmentSchema = new mongoose.Schema({
     url: String
 }, { _id: false });
 
+const activitySchema = new mongoose.Schema({
+    message: String,
+    timestamp: { type: Date, default: Date.now }
+});
+
 const taskSchema = new mongoose.Schema({
     title: String,
     description: String,
@@ -32,4 +37,6 @@ const projectSchema = new mongoose.Schema({
     members: [memberSchema]
 }, { timestamps: true });
 
-export default mongoose.model('Project', projectSchema);
+export const Activity = mongoose.model("Activity", activitySchema);
+
+export const Project = mongoose.model('Project', projectSchema);
